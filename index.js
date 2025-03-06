@@ -16,10 +16,10 @@ app.use(cors());
 app.use(express.json()); // For parsing application/json
 
 // DigiRecord API routes
-app.use('/api/admin', require('./routes/adminroutes'));
-app.use('/api/users', require('./routes/userroutes'));
-app.use('/api/fields', require('./routes/fieldroutes'));
-app.use('/api/wards', require('./routes/wardroutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/fields', require('./routes/fieldRoutes'));
+app.use('/api/wards', require('./routes/wardRoutes'));
 app.use('/api/education', require('./routes/education'));
 
 // Root route: Display an HTML page for any unmatched path
