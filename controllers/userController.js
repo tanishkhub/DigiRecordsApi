@@ -1,4 +1,4 @@
-const User = require("../models/user");
+const User = require("../models/User");
 
 // @desc Add a new user
 // @route POST /api/users
