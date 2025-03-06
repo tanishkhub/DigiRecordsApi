@@ -1,62 +1,65 @@
-// api/index.js
-const express = require("express");
-const dotenv = require("dotenv");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const connectDB = require("./config/db"); // Adjust the relative path if needed
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const connectDB = require('./config/db');
 
-// Load environment variables
-dotenv.config();
+dotenv.config(); // Load environment variables
 
-// Connect to database
+const app = express();
+const port = process.env.PORT || 5000;
+
+// Connect to the database
 connectDB();
 
-// Initialize Express
-const app = express();
-
 // Middleware
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:3000"]; // Default if env variable is missing
+app.use(cors());
+app.use(express.json()); // For parsing application/json
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS policy does not allow this origin"));
-      }
-    },
-    credentials: true, // Allow cookies if needed
-  })
-);
+// DigiRecord API routes
+app.use('/api/admin', require('./routes/adminroutes'));
+app.use('/api/users', require('./routes/userroutes'));
+app.use('/api/fields', require('./routes/fieldroutes'));
+app.use('/api/wards', require('./routes/wardroutes'));
+app.use('/api/education', require('./routes/education'));
 
-app.use(bodyParser.json());
-
-// Routes
-app.use("/api/admin", require("./routes/adminRoutes"));
-app.use("/api/users", require("./routes/userRoutes"));
-app.use("/api/fields", require("./routes/fieldRoutes"));
-app.use("/api/wards", require("./routes/wardRoutes"));
-app.use("/api/education", require("./routes/education"));
-
-app.get("/", (req, res) => {
-  res.send("DigiRecord API is running...");
+// Root route: Display an HTML page for any unmatched path
+app.get('/', async (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>Page Not Found</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f0f0f0;
+          }
+          .message {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+          }
+          .link {
+            font-size: 1.2em;
+            color: #007bff;
+            text-decoration: none;
+          }
+          .link:hover {
+            text-decoration: underline;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="message">
+          I think you are lost. Let me get you to the right path!
+        </div>
+        <a href="https://www.digirecords.vercel.app" class="link">Go to DigiRecord</a>
+      </body>
+    </html>
+  `);
 });
 
-// Port configuration for local development
-const PORT = process.env.PORT || 5000;
-
-// Check if running on Vercel or locally
-if (process.env.VERCEL) {
-  // On Vercel, export the serverless function using serverless-http
-  const serverless = require("serverless-http");
-  module.exports = serverless(app);
-} else {
-  // Locally, start the server normally
-  app.listen(PORT, () =>
-    console.log(`Server running on port ${PORT}`)
-  );
-  module.exports = app;
-}
+// Start the server
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});

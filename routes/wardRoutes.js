@@ -1,5 +1,5 @@
 const express = require("express");
-const Ward = require("../models/Ward");
+const Ward = require("../models/ward");
 const router = express.Router();
 
 // 📌 Add a New Ward
