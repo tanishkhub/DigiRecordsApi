@@ -14,6 +14,14 @@ connectDB();
 // Middleware
 app.use(cors());
 app.use(express.json()); // For parsing application/json
+// Handle preflight OPTIONS requests for all routes
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*'); // Change '*' to your allowed domain in production
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.sendStatus(200);
+});
+
 
 // DigiRecord API routes
 app.use('/api/admin', require('./routes/adminRoutes'));
