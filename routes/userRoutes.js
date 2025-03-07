@@ -1,6 +1,7 @@
 const express = require("express");
 const User = require("../models/User");
 const Fields = require("../models/Fields");
+const Backup = require("../models/Backup");
 
 const router = express.Router();
 
@@ -16,6 +17,9 @@ router.get("/", async (req, res) => {
   }
 });
 
+/**
+ * POST: Add a new user (Validates against dynamic fields)
+ */
 /**
  * POST: Add a new user (Validates against dynamic fields)
  */
@@ -39,7 +43,10 @@ router.post("/add", async (req, res) => {
       const invalidGeneral = Object.keys(generalInfo).filter(
         (field) => !allowedGeneralFields.includes(field)
       );
-      invalidFields = [...invalidFields, ...invalidGeneral.map(f => `generalInfo.${f}`)];
+      invalidFields = [
+        ...invalidFields,
+        ...invalidGeneral.map((f) => `generalInfo.${f}`),
+      ];
     }
 
     if (Array.isArray(familyMembers)) {
@@ -47,7 +54,10 @@ router.post("/add", async (req, res) => {
         const invalidFamily = Object.keys(member).filter(
           (field) => !allowedFamilyFields.includes(field)
         );
-        invalidFields = [...invalidFields, ...invalidFamily.map(f => `familyMembers[${index}].${f}`)];
+        invalidFields = [
+          ...invalidFields,
+          ...invalidFamily.map((f) => `familyMembers[${index}].${f}`),
+        ];
       });
     } else if (familyMembers) {
       return res.status(400).json({
@@ -65,7 +75,20 @@ router.post("/add", async (req, res) => {
     const newUser = new User({ generalInfo, familyMembers, additionalInfo });
     await newUser.save();
 
-    res.status(201).json({ message: "User added successfully", user: newUser });
+    // Also create a backup record with the same _id and data
+    const newBackup = new Backup({
+      _id: newUser._id,
+      generalInfo,
+      familyMembers,
+      additionalInfo,
+    });
+    await newBackup.save();
+
+    res.status(201).json({
+      message: "User added successfully",
+      userId: newUser._id,
+      user: newUser,
+    });
   } catch (error) {
     console.error("Error adding user:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
@@ -82,9 +105,7 @@ router.get("/:id", async (req, res) => {
     if (req.params.id.includes(",")) {
       // Split the string, remove duplicates, and trim any whitespace
       const uniqueIds = [
-        ...new Set(
-          req.params.id.split(",").map((id) => id.trim())
-        ),
+        ...new Set(req.params.id.split(",").map((id) => id.trim())),
       ];
 
       // Fetch all users with IDs in the uniqueIds array
@@ -104,7 +125,6 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 });
-
 
 /**
  * PUT: Update user details (Only allowed fields)
@@ -135,7 +155,7 @@ router.put("/update/:id", async (req, res) => {
     // Validate generalInfo if provided and is an array
     if (updateData.generalInfo && Array.isArray(updateData.generalInfo)) {
       const general = updateData.generalInfo[0] || {};
-      Object.keys(general).forEach(field => {
+      Object.keys(general).forEach((field) => {
         if (!allowedGeneral.includes(field)) {
           invalidFields.push(`generalInfo.${field}`);
         }
@@ -145,15 +165,13 @@ router.put("/update/:id", async (req, res) => {
     // Validate each object in familyMembers if provided
     if (updateData.familyMembers && Array.isArray(updateData.familyMembers)) {
       updateData.familyMembers.forEach((member, index) => {
-        Object.keys(member).forEach(field => {
+        Object.keys(member).forEach((field) => {
           if (!allowedFamily.includes(field)) {
             invalidFields.push(`familyMembers[${index}].${field}`);
           }
         });
       });
     }
-
-    // Optionally validate additionalInfo if needed
 
     if (invalidFields.length > 0) {
       return res.status(400).json({
@@ -182,7 +200,6 @@ router.put("/update/:id", async (req, res) => {
   }
 });
 
-
 /**
  * DELETE: Remove user by ID
  */
@@ -199,6 +216,5 @@ router.delete("/", async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 });
-
 
 module.exports = router;

@@ -21,6 +21,11 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/fields', require('./routes/fieldRoutes'));
 app.use('/api/wards', require('./routes/wardRoutes'));
 app.use('/api/education', require('./routes/education'));
+app.use("/api/caste", require("./routes/casteRoutes"));
+app.use("/api/subcaste", require("./routes/subCasteRoutes"));
+app.use("/api/gotra", require("./routes/gotraRoutes"));
+app.use("/api/district", require("./routes/districtRoutes"));
+app.use("/api/tehsil", require("./routes/tehsilRoutes"));
 
 // Root route: Display an HTML page for any unmatched path
 app.get('/', async (req, res) => {
