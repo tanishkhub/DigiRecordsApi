@@ -19,6 +19,7 @@ app.use(cors({
 }));
 
 app.use(express.json()); // For parsing application/json
+
 // Handle preflight OPTIONS requests for all routes
 app.options('*', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*'); // Change '*' to your allowed domain in production
@@ -27,8 +28,7 @@ app.options('*', (req, res) => {
   res.sendStatus(200);
 });
 
-
-// DigiRecord API routes
+// API Routes
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/fields', require('./routes/fieldRoutes'));
@@ -40,12 +40,62 @@ app.use("/api/gotra", require("./routes/gotraRoutes"));
 app.use("/api/district", require("./routes/districtRoutes"));
 app.use("/api/tehsil", require("./routes/tehsilRoutes"));
 
-// Root route: Display an HTML page for any unmatched path
-app.get('/', async (req, res) => {
+// Root endpoint displays a list of available endpoints
+app.get('/', (req, res) => {
   res.send(`
     <html>
       <head>
-        <title>Page Not Found</title>
+        <title>Available Endpoints</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f0f0f0;
+          }
+          h1 {
+            text-align: center;
+          }
+          ul {
+            list-style: none;
+            padding: 0;
+          }
+          li {
+            margin: 10px 0;
+          }
+          a {
+            text-decoration: none;
+            color: #007bff;
+          }
+          a:hover {
+            text-decoration: underline;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Available Endpoints</h1>
+        <ul>
+          <li><a href="/api/admin">/api/admin</a></li>
+          <li><a href="/api/users">/api/users</a></li>
+          <li><a href="/api/fields">/api/fields</a></li>
+          <li><a href="/api/wards">/api/wards</a></li>
+          <li><a href="/api/education">/api/education</a></li>
+          <li><a href="/api/caste">/api/caste</a></li>
+          <li><a href="/api/subcaste">/api/subcaste</a></li>
+          <li><a href="/api/gotra">/api/gotra</a></li>
+          <li><a href="/api/district">/api/district</a></li>
+          <li><a href="/api/tehsil">/api/tehsil</a></li>
+        </ul>
+      </body>
+    </html>
+  `);
+});
+
+// 404 handler for endpoints not found
+app.use((req, res, next) => {
+  res.status(404).send(`
+    <html>
+      <head>
+        <title>Error</title>
         <style>
           body {
             font-family: Arial, sans-serif;
@@ -53,25 +103,14 @@ app.get('/', async (req, res) => {
             padding: 50px;
             background-color: #f0f0f0;
           }
-          .message {
+          .error-message {
             font-size: 1.5em;
-            margin-bottom: 20px;
-          }
-          .link {
-            font-size: 1.2em;
-            color: #007bff;
-            text-decoration: none;
-          }
-          .link:hover {
-            text-decoration: underline;
+            color: red;
           }
         </style>
       </head>
       <body>
-        <div class="message">
-          I think you are lost. Let me get you to the right path!
-        </div>
-        <a href="https://www.digirecords.vercel.app" class="link">Go to DigiRecord</a>
+        <div class="error-message">Error is coming: Endpoint not found!</div>
       </body>
     </html>
   `);
